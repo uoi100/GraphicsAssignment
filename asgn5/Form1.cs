@@ -663,8 +663,8 @@ namespace asgn5v1
 
             setIdentity(rotationMatrix, 4, 4);
 
-            double sin = Math.Sin(angle);
-            double cos = Math.Cos(angle);
+            double sin = Math.Round(Math.Sin(angle),2);
+            double cos = Math.Round(Math.Cos(angle),2);
 
             if (x)
             {
@@ -711,7 +711,6 @@ namespace asgn5v1
         {
             while (!abort)
             {
-                Console.WriteLine("THIS IS WORKING! Abort: " + abort);
                 setRotation(x, y, z);
             }
         }
