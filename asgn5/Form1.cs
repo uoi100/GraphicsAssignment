@@ -391,6 +391,7 @@ namespace asgn5v1
 
         void RestoreInitialImage()
         {
+            initializeVertices();
             Invalidate();
         } // end of RestoreInitialImage
 
@@ -439,8 +440,7 @@ namespace asgn5v1
                 MessageBox.Show("***Failed to Open Line Data File***");
                 return false;
             }
-            scrnpts = new double[numpts, 4];
-            setIdentity(ctrans, 4, 4);  //initialize transformation matrix to identity
+
             initializeVertices();
             return true;
         } // end of GetNewData
@@ -491,6 +491,8 @@ namespace asgn5v1
 
         void initializeVertices()
         {
+            scrnpts = new double[numpts, 4];
+            setIdentity(ctrans, 4, 4);  //initialize transformation matrix to identity
 
             int width = (ClientRectangle.Width - toolBar1.ClientRectangle.Width) / 20;
             int height = ClientRectangle.Height / 20;
@@ -629,7 +631,7 @@ namespace asgn5v1
             }
         }
 
-        void matrixShear(double[,] a, bool right)
+        void matrixShear(double[,] a, bool right = false)
         {
 
             double[,] shearMatrix = new double[4, 4];
@@ -638,8 +640,20 @@ namespace asgn5v1
 
 
             if (right)
+                shearMatrix[1, 0] = -0.10d;
+            else
+                shearMatrix[1, 0] = 0.10d;
+
+            for (int i = 0; i < 4; i++)
             {
-                shearMatrix[1, 0] = 1.10;
+                for (int j = 0; j < 4; j++)
+                {
+                    double temp = 0.0d;
+                    for (int k = 0; k < 4; k++)
+                        temp += a[i, k] * shearMatrix[k, j];
+
+                    a[i, j] = temp;
+                }
             }
         }
 
@@ -649,8 +663,8 @@ namespace asgn5v1
 
             setIdentity(rotationMatrix, 4, 4);
 
-            double sin = Math.Sin(angle);
-            double cos = Math.Cos(angle);
+            double sin = Math.Round(Math.Sin(angle),2);
+            double cos = Math.Round(Math.Cos(angle),2);
 
             if (x)
             {
@@ -711,11 +725,13 @@ namespace asgn5v1
                     return;
                 }
 
+                if (abort)
+                    return;
+
                 matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
                 matrixRotation(ctrans, 0.05d, x, y, z);
                 matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
                 Refresh();
-                Console.WriteLine("THIS IS WORKING!");
                 Application.DoEvents();
             }
             catch (Exception e)
@@ -729,9 +745,14 @@ namespace asgn5v1
             if (threadRunning)
             {
                 abort = true;
-                threadRunning = false;
-                Thread.Sleep(100);
             }
+
+            if (worker != null)
+                worker.Abort();
+
+            // Wait for worker thread to terminate before executing further instructions
+            Thread.Sleep(0);
+
 
             if (e.Button == transleftbtn)
             {
@@ -771,21 +792,21 @@ namespace asgn5v1
             if (e.Button == rotxby1btn)
             {
                 matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
-                matrixRotation(ctrans, 0.05);
+                matrixRotation(ctrans, 0.05d);
                 matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
                 Refresh();
             }
             if (e.Button == rotyby1btn)
             {
                 matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
-                matrixRotation(ctrans, 0.05, false, true);
+                matrixRotation(ctrans, 0.05d, false, true);
                 matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
                 Refresh();
             }
             if (e.Button == rotzby1btn)
             {
                 matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
-                matrixRotation(ctrans, 0.05, false, false, true);
+                matrixRotation(ctrans, 0.05d, false, false, true);
                 matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
                 Refresh();
             }
@@ -818,11 +839,47 @@ namespace asgn5v1
 
             if (e.Button == shearleftbtn)
             {
+                double baselineX = 0;
+                double baselineY = double.MinValue;
+
+                for(int i = 0; i < scrnpts.GetLength(0); i++)
+                {
+                    if (scrnpts[i, 1] > baselineY)
+                    {
+                        baselineX = scrnpts[i, 0];
+                        baselineY = scrnpts[i, 1];
+                    }
+                }
+
+                matrixTranslate(ctrans, -baselineX, -baselineY);
+                matrixShear(ctrans);
+                matrixTranslate(ctrans, baselineX, baselineY);
+
+                Console.WriteLine("Baseline Y: " + baselineY);
+
                 Refresh();
             }
 
             if (e.Button == shearrightbtn)
             {
+                double baselineX = 0;
+                double baselineY = double.MinValue;
+
+                for (int i = 0; i < scrnpts.GetLength(0); i++)
+                {
+                    if (scrnpts[i, 1] > baselineY)
+                    {
+                        baselineX = scrnpts[i, 0];
+                        baselineY = scrnpts[i, 1];
+                    }
+                }
+
+                Console.WriteLine("Baseline Y: " + baselineY);
+
+                matrixTranslate(ctrans, -baselineX, -baselineY);
+                matrixShear(ctrans, true);
+                matrixTranslate(ctrans, baselineX, baselineY);
+
                 Refresh();
             }
 
