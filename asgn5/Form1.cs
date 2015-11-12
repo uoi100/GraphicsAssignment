@@ -524,7 +524,7 @@ namespace asgn5v1
             matrixTranslate(ctrans, -vertices[0, 0], -vertices[0, 1]);
 
             // Scale to half the window's height
-            matrixScale(ctrans, height/2, height/2);
+            matrixScale(ctrans, height/2, height/2, height/2);
 
             // Reflect on the X-Axis
             matrixReflection(ctrans, false, true, false);
@@ -728,9 +728,9 @@ namespace asgn5v1
                 if (abort)
                     return;
 
-                matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
-                matrixRotation(ctrans, 0.05d, x, y, z);
-                matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
+                matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1], -scrnpts[0,2]);
+                matrixRotation(ctrans, 0.05f, x, y, z);
+                matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1], scrnpts[0,2]);
                 Refresh();
                 Application.DoEvents();
             }
@@ -791,22 +791,25 @@ namespace asgn5v1
             }
             if (e.Button == rotxby1btn)
             {
-                matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
-                matrixRotation(ctrans, 0.05d);
-                matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
+                matrixTranslate(ctrans, 0, -scrnpts[0, 1], -scrnpts[0,2]);
+                matrixRotation(ctrans, 0.05);
+                matrixTranslate(ctrans, 0, scrnpts[0, 1], scrnpts[0,2]);
                 Refresh();
             }
             if (e.Button == rotyby1btn)
             {
-                matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
-                matrixRotation(ctrans, 0.05d, false, true);
-                matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
+                int height = ClientRectangle.Height / 20;
+                height = height / 2;
+
+                matrixTranslate(ctrans, -scrnpts[0, 0], 0, -scrnpts[0,2]);
+                matrixRotation(ctrans, 0.05, false, true);
+                matrixTranslate(ctrans, scrnpts[0, 0], 0, scrnpts[0,2]);
                 Refresh();
             }
             if (e.Button == rotzby1btn)
             {
                 matrixTranslate(ctrans, -scrnpts[0, 0], -scrnpts[0, 1]);
-                matrixRotation(ctrans, 0.05d, false, false, true);
+                matrixRotation(ctrans, 0.05f, false, false, true);
                 matrixTranslate(ctrans, scrnpts[0, 0], scrnpts[0, 1]);
                 Refresh();
             }
