@@ -31,6 +31,7 @@ namespace asgn5v1
         double[,] vertices;
         double[,] scrnpts;
         double[,] ctrans = new double[4, 4];  //your main transformation matrix
+
         private System.Windows.Forms.ImageList tbimages;
         private System.Windows.Forms.ToolBar toolBar1;
         private System.Windows.Forms.ToolBarButton transleftbtn;
@@ -497,29 +498,6 @@ namespace asgn5v1
             int width = (ClientRectangle.Width - toolBar1.ClientRectangle.Width) / 20;
             int height = ClientRectangle.Height / 20;
 
-            // Get the center of the vertices
-            double vertexWidthMin = double.MaxValue, vertexWidthMax = double.MinValue, vertexWidth;
-            for (int i = 0; i < 4; i++)
-            {
-                if (vertices[i, 0] < vertexWidthMin)
-                    vertexWidthMin = vertices[i, 0];
-                if (vertices[i, 0] > vertexWidthMax)
-                    vertexWidthMax = vertices[1, 0];
-            }
-
-            vertexWidth = (vertexWidthMax - vertexWidthMin) / 2 + vertexWidthMin;
-
-            double vertexHeightMin = double.MaxValue, vertexHeightMax = double.MinValue, vertexHeight;
-            for (int i = 0; i < 4; i++)
-            {
-                if (vertices[i, 1] < vertexHeightMin)
-                    vertexHeightMin = vertices[i, 1];
-                if (vertices[i, 1] > vertexHeightMax)
-                    vertexHeightMax = vertices[1, 1];
-            }
-
-            vertexHeight = (vertexHeightMax - vertexHeightMin) / 2 + vertexHeightMin;
-
             // Translate to origin
             matrixTranslate(ctrans, -vertices[0, 0], -vertices[0, 1]);
 
@@ -531,6 +509,7 @@ namespace asgn5v1
 
             // Translate to middle of the screen
             matrixTranslate(ctrans, ClientRectangle.Width/2, ClientRectangle.Height/2);
+            
         }
 
         /// <summary>
@@ -842,46 +821,40 @@ namespace asgn5v1
 
             if (e.Button == shearleftbtn)
             {
-                double baselineX = 0;
-                double baselineY = double.MinValue;
+                double[,] baseline = new double[1, 4];
+                baseline[0,3] = 1;
 
-                for(int i = 0; i < scrnpts.GetLength(0); i++)
+                for (int j = 0; j < 4; j++)
                 {
-                    if (scrnpts[i, 1] > baselineY)
-                    {
-                        baselineX = scrnpts[i, 0];
-                        baselineY = scrnpts[i, 1];
-                    }
+                    double temp = 0.0d;
+                    for (int k = 0; k < 4; k++)
+                        temp += baseline[0, k] * ctrans[k, j];
+                    baseline[0, j] = temp;
                 }
 
-                matrixTranslate(ctrans, -baselineX, -baselineY);
+                matrixTranslate(ctrans, -baseline[0, 0], -baseline[0,1]);
                 matrixShear(ctrans);
-                matrixTranslate(ctrans, baselineX, baselineY);
-
-                Console.WriteLine("Baseline Y: " + baselineY);
+                matrixTranslate(ctrans, baseline[0, 0], baseline[0,1]);
 
                 Refresh();
             }
 
             if (e.Button == shearrightbtn)
             {
-                double baselineX = 0;
-                double baselineY = double.MinValue;
+                double[,] baseline = new double[1, 4];
+                baseline[0, 3] = 1;
 
-                for (int i = 0; i < scrnpts.GetLength(0); i++)
+                for (int j = 0; j < 4; j++)
                 {
-                    if (scrnpts[i, 1] > baselineY)
-                    {
-                        baselineX = scrnpts[i, 0];
-                        baselineY = scrnpts[i, 1];
-                    }
+                    double temp = 0.0d;
+                    for (int k = 0; k < 4; k++)
+                        temp += baseline[0, k] * ctrans[k, j];
+                    baseline[0, j] = temp;
                 }
 
-                Console.WriteLine("Baseline Y: " + baselineY);
-
-                matrixTranslate(ctrans, -baselineX, -baselineY);
+                matrixTranslate(ctrans, -baseline[0, 0], -baseline[0, 1]);
                 matrixShear(ctrans, true);
-                matrixTranslate(ctrans, baselineX, baselineY);
+                matrixTranslate(ctrans, baseline[0, 0], baseline[0, 1]);
 
                 Refresh();
             }
